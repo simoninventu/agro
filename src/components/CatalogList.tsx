@@ -181,12 +181,13 @@ export function CatalogList({ onEdit, onViewSales, onAddNew, refreshTrigger }: C
                                     const isExpanded = expandedProduct === product.id;
                                     const lastQuotation = (() => {
                                         const productQuotations = allQuotations
-                                            .filter(q => q.catalogProductId === product.id)
+                                            .filter(q => q.items.some(item => item.type === 'catalog' && item.catalogProductId === product.id))
                                             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
                                         if (productQuotations.length > 0) {
                                             const lastQ = productQuotations[0];
-                                            const unitPrice = lastQ.finalPrice / lastQ.quantity;
+                                            const productItem = lastQ.items.find(item => item.type === 'catalog' && item.catalogProductId === product.id);
+                                            const unitPrice = productItem ? productItem.unitPrice : 0;
                                             return `USD ${unitPrice.toFixed(2)}`;
                                         }
                                         return '-';
@@ -255,7 +256,7 @@ export function CatalogList({ onEdit, onViewSales, onAddNew, refreshTrigger }: C
                                                                 <div className="detail-item">
                                                                     <label>Cotizaciones Registradas</label>
                                                                     <span>
-                                                                        {allQuotations.filter(q => q.catalogProductId === product.id).length}
+                                                                        {allQuotations.filter(q => q.items.some(item => item.type === 'catalog' && item.catalogProductId === product.id)).length}
                                                                     </span>
                                                                 </div>
 

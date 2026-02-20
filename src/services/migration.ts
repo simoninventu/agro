@@ -140,22 +140,25 @@ export async function migrateToSupabase() {
     // 3. Migrate Quotations
     const localQuotations = getLocalQuotations();
     for (const q of localQuotations) {
-        // Resolve new product ID from map
-        const newProductId = productIdMap.get(q.catalogProductId) || q.catalogProductId;
+        // Resolve new product ID from map (legacy support)
+        const legacyQ = q as any;
+        const newProductId = productIdMap.get(legacyQ.catalogProductId) || legacyQ.catalogProductId;
 
         await supabase.from('quotations').upsert({
             id: q.id.startsWith('Q') || q.id.includes('-') === false ? uuidv4() : q.id,
             date: q.date,
             client_name: q.clientName,
             catalog_product_id: newProductId,
-            quantity: q.quantity,
-            base_cost: (q as any).base_cost !== undefined ? (q as any).base_cost : q.baseCost,
-            markup: q.markup,
-            final_price: q.finalPrice,
+            quantity: legacyQ.quantity || q.items.reduce((sum: number, i: any) => sum + i.quantity, 0),
+            base_cost: legacyQ.baseCost !== undefined ? legacyQ.baseCost : (legacyQ.base_cost !== undefined ? legacyQ.base_cost : 0),
+            markup: legacyQ.markup || 0,
+            final_price: legacyQ.finalPrice || q.totalPrice,
             payment_terms: q.paymentTerms,
             status: q.status,
             reason: q.reason,
-            notes: q.notes
+            notes: q.notes,
+            items: JSON.stringify(q.items),
+            attachments: JSON.stringify(q.attachments || [])
         });
     }
 

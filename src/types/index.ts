@@ -13,6 +13,12 @@ export interface Operation {
   type: 'interno' | 'tercerizado';
 }
 
+export interface QuotationDimensions {
+  length: number;
+  width: number;
+  thickness: number;
+}
+
 export interface QuotationItem {
   id: string;
   type: 'catalog' | 'custom';

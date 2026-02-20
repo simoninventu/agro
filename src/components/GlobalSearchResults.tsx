@@ -38,7 +38,10 @@ export function GlobalSearchResults({ term, onEditProduct, onEditQuotation }: Gl
             const quotations = allQuotations.filter(q =>
                 (q.clientName || '').toLowerCase().includes(lowerTerm) ||
                 (q.notes || '').toLowerCase().includes(lowerTerm) ||
-                (q.catalogProduct?.codigoCompetencia || '').toLowerCase().includes(lowerTerm)
+                q.items.some(item =>
+                    item.type === 'catalog' &&
+                    (item.description || '').toLowerCase().includes(lowerTerm)
+                )
             );
 
             setResults({ products, quotations });
@@ -94,7 +97,7 @@ export function GlobalSearchResults({ term, onEditProduct, onEditQuotation }: Gl
                                         <div className="item-info">
                                             <span className="item-title">{q.clientName}</span>
                                             <span className="item-subtitle">
-                                                {new Date(q.date).toLocaleDateString()} - ${q.finalPrice.toFixed(2)}
+                                                {new Date(q.date).toLocaleDateString()} - ${q.totalPrice.toFixed(2)}
                                             </span>
                                         </div>
                                         <ArrowRight size={18} className="arrow" />
