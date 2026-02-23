@@ -1,10 +1,27 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const rawUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Auto-fix: If the user only provides the project ID (e.g. 'bigokqnacrutbkwemmrx')
+// instead of the full URL, we convert it to the standard Supabase format.
+function normalizeSupabaseUrl(url: string | undefined): string {
+    if (!url) return '';
+    const trimmed = url.trim();
+    if (!trimmed.includes('.') && trimmed.length > 5) {
+        return `https://${trimmed}.supabase.co`;
+    }
+    if (trimmed && !trimmed.startsWith('http')) {
+        return `https://${trimmed}`;
+    }
+    return trimmed;
+}
+
+const supabaseUrl = normalizeSupabaseUrl(rawUrl);
+
 if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Supabase credentials missing. Check your .env file.');
+    console.warn('Supabase credentials missing. Check your environment variables.');
+    if (rawUrl) console.log('Raw URL provided:', rawUrl);
 }
 
 export const isSupabaseConfigured = Boolean(
